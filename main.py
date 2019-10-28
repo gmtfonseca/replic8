@@ -6,7 +6,7 @@ from replic8.core.model import ScheduleModel
 scheduleModel = ScheduleModel(
     '/Users/gustavo.fonseca/Projetos/experimentos/copy_files/src/model.json')
 
-scheduleModel.setLastCopy(datetime.now())
+scheduleModel.setCopyInterval(15)
 
 
 copier = Copier(
