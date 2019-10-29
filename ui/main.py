@@ -22,6 +22,8 @@ class MainPresenter:
         interactor.Install(self, self._view)
         self._app = app
         self._createTaskBarIcon()
+        # For testing
+        settings.show(self._view)
 
     def _createTaskBarIcon(self):
         taskbarHandler = taskbar.TaskbarHandler(self.showSettings, self.quit)
