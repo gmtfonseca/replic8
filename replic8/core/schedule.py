@@ -1,9 +1,7 @@
 import time
-import json
 from threading import Thread
 from enum import Enum
 from datetime import date
-from pathlib import Path
 
 
 class SchedulerState(Enum):
@@ -46,8 +44,7 @@ class Scheduler(Thread):
 
     def _copyFiles(self):
         try:
-            self._logger.info(
-                f'Copying files { self._copier.sources } to folder { self._copier.destination }')
+            self._logger.info(f'Copying files { self._copier.sources } to folder { self._copier.destination }')
             self._state = SchedulerState.COPYING
             self._copier.perform()
             self._scheduleModel.setLastCopy(date.today())

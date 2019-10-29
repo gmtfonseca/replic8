@@ -1,13 +1,10 @@
-import os
-from pathlib import Path
-
 import wx
 
 from ui import main
 from replic8.core.app import App
 
 
-APPDATA_PATH = Path(os.getenv('LOCALAPPDATA')) / 'Replic8'
+# APPDATA_PATH = Path(os.getenv('LOCALAPPDATA')) / 'Replic8'
 
 config = {
 }
