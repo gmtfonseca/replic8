@@ -80,5 +80,12 @@ class Copier(object):
         sources = self._copyModel.sources
         for source in sources:
             destFile = destFolder / source.name
-            print(destFile)
             copyfile(source, destFile)
+
+    @property
+    def sources(self):
+        return [source.as_posix() for source in self._copyModel.sources]
+
+    @property
+    def destination(self):
+        return self._copyModel.destination.as_posix()
