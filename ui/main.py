@@ -1,6 +1,6 @@
 import wx
 
-from ui import taskbar
+from ui import taskbar, settings
 
 
 def start(app):
@@ -24,18 +24,17 @@ class MainPresenter:
         self._createTaskBarIcon()
 
     def _createTaskBarIcon(self):
-        self._taskBarIcon = taskbar.create(self._view)
-        print(self._taskBarIcon)
+        taskbarHandler = taskbar.TaskbarHandler(self.showSettings, self.quit)
+        self._taskBarIcon = taskbar.create(self._view, taskbarHandler)
 
     def updateChildrenState(self, syncState):
         self._taskBarIcon.updateState(syncState)
 
-    def _removeTaskBarIcon(self):
-        if self._taskBarIcon:
-            self._taskBarIcon.quit()
+    def showSettings(self):
+        settings.show(self._view)
 
     def quit(self):
-        self._removeTaskBarIcon()
+        self._taskBarIcon.destroy()
         self._view.destroy()
 
 

@@ -1,19 +1,30 @@
 import wx
 import wx.adv
+import platform
 
 from ui import assets
 
 
-def create(frame):
-    icon = wx.Icon(assets.image('replic8.png'))
+def create(frame, taskbarHandler):
+    icon = wx.Icon(assets.image('replic8_win.png'))
+    if platform.system() != 'Windows':
+        icon = wx.Icon(assets.image('replic8.png'))
     return TaskBarPresenter(TaskBarIconView(frame, icon),
-                            TaskBarInteractor())
+                            TaskBarInteractor(),
+                            taskbarHandler)
+
+
+class TaskbarHandler:
+    def __init__(self, onSettings, onExit):
+        self.onSettings = onSettings
+        self.onExit = onExit
 
 
 class TaskBarIconView(wx.adv.TaskBarIcon):
     def __init__(self, frame, icon):
         super().__init__()
-        self.SetIcon(icon, 'Teste')
+        self.SetIcon(icon, 'Replic8')
+        self.frame = frame
         self._createPopupMenu()
 
     def _createPopupMenu(self):
@@ -28,14 +39,12 @@ class TaskBarIconView(wx.adv.TaskBarIcon):
     def setIconAndTooltip(self, icon, tooltip):
         self.SetIcon(icon, tooltip)
 
-    def destroy(self):
-        wx.CallAfter(self.Destroy)
-
 
 class TaskBarPresenter:
-    def __init__(self, view, interactor):
+    def __init__(self, view, interactor, taskbarHandler):
         self._view = view
         interactor.Install(self, self._view)
+        self._taskbarHandler = taskbarHandler
         self.initView()
 
     def initView(self):
@@ -58,8 +67,14 @@ class TaskBarPresenter:
     def handleSingleRightClick(self):
         self._view.showPopupMenu()
 
-    def quit(self):
-        self._view.destroy()
+    def showSettings(self):
+        self._taskbarHandler.onSettings()
+
+    def exit(self):
+        self._taskbarHandler.onExit()
+
+    def destroy(self):
+        self._view.Destroy()
 
 
 class TaskBarInteractor:
@@ -68,20 +83,22 @@ class TaskBarInteractor:
         self._presenter = presenter
         self._view = view
 
-        self._view.Bind(wx.adv.EVT_TASKBAR_LEFT_UP, self.OnLeftClickTaskBarIcon)
-        self._view.Bind(wx.adv.EVT_TASKBAR_RIGHT_UP, self.OnRightClickTaskBarIcon)
-        view.popupMenu.Bind(wx.EVT_MENU, self.OnSettings, view.menuItemSettings)
+        self._view.Bind(wx.adv.EVT_TASKBAR_LEFT_UP,
+                        self.OnLeftClickTaskBarIcon)
+        self._view.Bind(wx.adv.EVT_TASKBAR_RIGHT_UP,
+                        self.OnRightClickTaskBarIcon)
+        view.popupMenu.Bind(wx.EVT_MENU, self.OnSettings,
+                            view.menuItemSettings)
         view.popupMenu.Bind(wx.EVT_MENU, self.OnExit, view.menuItemExit)
 
     def OnLeftClickTaskBarIcon(self, evt):
-        print('clickd')
         self._presenter.handleSingleLeftClick()
 
     def OnRightClickTaskBarIcon(self, evt):
         self._presenter.handleSingleRightClick()
 
     def OnSettings(self, evt):
-        pass
+        self._presenter.showSettings()
 
     def OnExit(self, evt):
-        pass
+        self._presenter.exit()
