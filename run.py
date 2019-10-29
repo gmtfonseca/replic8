@@ -1,23 +1,24 @@
 from replic8.core.schedule import Scheduler
 from replic8.core.copy import Copier
-from replic8.core.model import ScheduleModel
+from replic8.core.model import ScheduleModel, CopyModel
 from replic8.core.logger import LoggerFactory
 from pathlib import Path
 from datetime import date, timedelta
 
-modelPath = Path('F:/Projetos/trash/src/model.json')
-scheduleModel = ScheduleModel(modelPath)
-
-
+scheduleModel = ScheduleModel('./fixture/schedule.config')
+scheduleModel.clear()
 scheduleModel.setCopyInterval(7)
 
 lastCopy = date.today() - timedelta(days=8)
 scheduleModel.setLastCopy(lastCopy)
 
+copyModel = CopyModel('./fixture/copy.config')
+copyModel.clear()
+copyModel.addSource('./fixture/src/dumb.js')
+copyModel.addSource('./fixture/src/dumb2.js')
+copyModel.setDestination('./fixture/dest/')
 
-src = Path('F:/Projetos/trash/src/bigiso.iso')
-dest = Path('F:/Projetos/trash/dest/bigiso_backup.iso')
-copier = Copier(src, dest)
+copier = Copier(copyModel)
 
 schedule = Scheduler(copier, 30, scheduleModel,
                      LoggerFactory.getDevLogger())

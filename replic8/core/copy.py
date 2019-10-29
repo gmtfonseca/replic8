@@ -9,14 +9,10 @@ class Source(object):
     '''
 
     def __init__(self, paths=[]):
-        self._paths = self.initPaths(paths)
+        self._paths = self.initialize(paths)
 
-    def initPaths(self, paths):
-        paths = []
-        for path in paths:
-            paths.append(Path(path))
-
-        return paths
+    def initialize(self, paths):
+        return [Path(path) for path in paths]
 
     def add(self, path):
         self._paths.append(Path(path))
@@ -24,6 +20,10 @@ class Source(object):
     @property
     def paths(self):
         return self._paths
+
+    @classmethod
+    def empty(cls):
+        return cls('')
 
 
 class Destination(object):
@@ -38,33 +38,47 @@ class Destination(object):
     def path(self):
         return self._path
 
+    @path.setter
+    def path(self, path):
+        self._path = Path(path)
+
+    @classmethod
+    def empty(cls):
+        return cls('')
+
 
 class Copy(object):
     def __init__(self, source, destination):
         self._source = source
         self._destination = destination
 
-    @classmethod
-    def fromJsonFile(cls, jsonFile):
-        # TODO - Implement
-        jsonDict = json.load(jsonFile)
-        return cls(jsonDict['pathSrc'], jsonDict['pathDest'])
+    def addSource(self, path):
+        self._source.add(path)
+
+    def setDestination(self, path):
+        self._destination.path = path
+
+    @property
+    def sources(self):
+        return self._source.paths
+
+    @property
+    def destination(self):
+        return self._destination.path
 
     @classmethod
     def empty(cls):
-        return cls('', '')
-
-
-class CopyModel(object):
-    def __init__(self, path):
-        self._path = path
-        self._copy = Copy.empty()
+        return cls(Source.empty(), Destination.empty())
 
 
 class Copier(object):
     def __init__(self, copyModel):
-        self._copy = copyModel.load()
+        self._copyModel = copyModel
 
     def perform(self):
-        for path in self._copy.paths:
-            copyfile(self._pathSrc, self._pathDest)
+        destFolder = self._copyModel.destination
+        sources = self._copyModel.sources
+        for source in sources:
+            destFile = destFolder / source.name
+            print(destFile)
+            copyfile(source, destFile)
