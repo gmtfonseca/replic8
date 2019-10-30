@@ -10,7 +10,7 @@ def start(app):
 class MainFrame(wx.Frame):
 
     def __init__(self):
-        super(MainFrame, self).__init__(None)
+        super().__init__(None)
 
     def destroy(self):
         self.Destroy()
@@ -22,18 +22,24 @@ class MainPresenter:
         interactor.Install(self, self._view)
         self._app = app
         self._createTaskBarIcon()
-        # For testing
-        settings.show(self._view)
+        settings.show(self._view, self._app.scheduleModel, self._app.copyModel, self._app.logger)
 
     def _createTaskBarIcon(self):
         taskbarHandler = taskbar.TaskbarHandler(self.showSettings, self.quit)
         self._taskBarIcon = taskbar.create(self._view, taskbarHandler)
 
+    def _initialize(self):
+        if not self._app.ready():
+            settings.show(self._view, self._app.scheduleModel, self._app.copyModel, self._app.logger)
+        else:
+            # Start sync
+            pass
+
     def updateChildrenState(self, syncState):
         self._taskBarIcon.updateState(syncState)
 
     def showSettings(self):
-        settings.show(self._view)
+        settings.show(self._view, self._app.scheduleModel, self._app.copyModel, self._app.logger)
 
     def quit(self):
         self._taskBarIcon.destroy()

@@ -36,12 +36,12 @@ class CopyModel(Model):
         super().__init__(path)
         self._copy = self.initialize(Copy.empty())
 
-    def addSource(self, path):
-        self._copy.addSource(path)
+    def setSources(self, paths):
+        self._copy.sources = paths
         self.saveToDisk(self._copy)
 
     def setDestination(self, path):
-        self._copy.setDestination(path)
+        self._copy.destination = path
         self.saveToDisk(self._copy)
 
     def clear(self):

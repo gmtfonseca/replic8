@@ -21,9 +21,10 @@ class Schedule(object):
 
 
 class Scheduler(Thread):
-    def __init__(self, copier, delay, scheduleModel, logger):
+    def __init__(self, view, copier, delay, scheduleModel, logger):
         super().__init__()
         super().setDaemon(True)
+        self._view = view
         self._copier = copier
         self._delay = delay
         self._scheduleModel = scheduleModel

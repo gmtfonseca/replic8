@@ -1,4 +1,4 @@
-from replic8.core.schedule import Scheduler
+""" from replic8.core.schedule import Scheduler
 from replic8.core.copy import Copier
 from replic8.core.model import ScheduleModel, CopyModel
 from replic8.core.logger import LoggerFactory
@@ -25,3 +25,4 @@ schedule.start()
 
 while True:
     pass
+ """

@@ -8,21 +8,22 @@ class Source(object):
     '''
 
     def __init__(self, paths=[]):
-        self._paths = self.initialize(paths)
+        self._paths = self._initialize(paths)
 
-    def initialize(self, paths):
+    def _initialize(self, paths):
         return [Path(path) for path in paths]
-
-    def add(self, path):
-        self._paths.append(Path(path))
 
     @property
     def paths(self):
         return self._paths
 
+    @paths.setter
+    def paths(self, paths):
+        self._paths = self._initialize(paths)
+
     @classmethod
     def empty(cls):
-        return cls('')
+        return cls([])
 
 
 class Destination(object):
@@ -31,7 +32,7 @@ class Destination(object):
     '''
 
     def __init__(self, path):
-        self._path = Path(path)
+        self._path = Path(path) if path else ''
 
     @property
     def path(self):
@@ -51,19 +52,21 @@ class Copy(object):
         self._source = source
         self._destination = destination
 
-    def addSource(self, path):
-        self._source.add(path)
-
-    def setDestination(self, path):
-        self._destination.path = path
-
     @property
     def sources(self):
         return self._source.paths
 
+    @sources.setter
+    def sources(self, paths):
+        self._source.paths = paths
+
     @property
     def destination(self):
         return self._destination.path
+
+    @destination.setter
+    def destination(self, path):
+        self._destination.path = path
 
     @classmethod
     def empty(cls):

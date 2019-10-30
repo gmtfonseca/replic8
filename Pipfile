@@ -9,6 +9,7 @@ flake8 = "*"
 
 [packages]
 wxpython = "*"
+appdirs = "*"
 
 [requires]
 python_version = "3.7"
