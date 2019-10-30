@@ -1,5 +1,6 @@
 import wx
 
+from replic8.core.schedule import EVT_SCHEDULER
 from ui import taskbar, settings
 
 
@@ -31,19 +32,27 @@ class MainPresenter:
 
     def _initialize(self):
         if not self._app.ready():
-            settings.show(self._view,
-                          self._app.scheduleModel,
-                          self._app.copyModel,
-                          self._app.schedulerManager,
-                          self._app.logger)
+            self.showSettings()
         else:
             self._app.schedulerManager.start()
 
-    def updateChildrenState(self, syncState):
-        self._taskBarIcon.updateState(syncState)
+    def handleSchedulerStateUpdate(self, evt):
+        self.updateChildren(evt)
+
+    def updateChildren(self, evt):
+        self.updateTaskBarIcon(evt.state, evt.msg)
+
+    def updateTaskBarIcon(self, state, msg):
+        self._taskBarIcon.updateState(state)
+        if msg:
+            self._taskBarIcon.showBaloon(msg)
 
     def showSettings(self):
-        settings.show(self._view, self._app.scheduleModel, self._app.copyModel, self._app.logger)
+        settings.show(self._view,
+                      self._app.scheduleModel,
+                      self._app.copyModel,
+                      self._app.schedulerManager,
+                      self._app.logger)
 
     def quit(self):
         self._taskBarIcon.destroy()
@@ -54,3 +63,8 @@ class MainInteractor:
     def Install(self, presenter, view):
         self._presenter = presenter
         self._view = view
+
+        self._view.Bind(EVT_SCHEDULER, self.OnUpdateSchedulerState)
+
+    def OnUpdateSchedulerState(self, evt):
+        self._presenter.handleSchedulerStateUpdate(evt)

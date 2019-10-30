@@ -11,6 +11,7 @@ AUTHOR = 'gmtfonseca'
 
 appDataPath = Path(AppDirs('Replic8', 'gmtfonseca').user_data_dir)
 
+
 config = {
     'storage': {
         'schedule_data_path': appDataPath / 'schedule.config',

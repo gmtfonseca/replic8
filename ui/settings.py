@@ -1,5 +1,8 @@
-import wx
 from pathlib import Path
+
+import wx
+
+from ui import assets
 
 
 def show(parent, scheduleModel, copyModel, schedulerManager, logger):
@@ -14,29 +17,35 @@ def show(parent, scheduleModel, copyModel, schedulerManager, logger):
 class SettingsDialog(wx.Dialog):
 
     def __init__(self, parent, title):
-        super().__init__(parent=parent, title=title, size=(500, 360))
+        super().__init__(parent=parent, title=title, size=(500, 390))
         self._initLayout()
 
     def _initLayout(self):
         panel = wx.Panel(self)
 
-        lblInterval = wx.StaticText(panel, -1, 'Intervalo (dias)', size=(100, -1))
+        lblInterval = wx.StaticText(panel, -1, 'Intervalo (dias)', size=(95, -1))
         self.txtInterval = wx.TextCtrl(panel, -1, '', size=(50, -1))
 
-        lblDest = wx.StaticText(panel, -1, 'Pasta de destino', size=(100, -1))
+        lblDest = wx.StaticText(panel, -1, 'Pasta de destino', size=(95, -1))
         self.txtDest = wx.TextCtrl(panel, -1, '')
-        self.btnDest = wx.Button(panel, -1, 'Selecionar', (50, 50))
+        self.txtDest.Disable()
 
-        sourceBox = wx.StaticBox(panel, wx.ID_ANY, 'Arquivos a serem copiados')
+        bmpFolder = wx.Bitmap(assets.image('folder.png'), wx.BITMAP_TYPE_PNG)
+        self.btnSelectDest = wx.BitmapButton(panel, -1, bmpFolder, (50, 50))
 
-        self.btnAddSource = wx.Button(sourceBox, -1, 'Adicionar', (50, 50))
-        self.btnRemoveSource = wx.Button(sourceBox, -1, 'Remover', (50, 50))
+        sourceBox = wx.StaticBox(panel, -1, 'Arquivos a serem copiados')
+
+        bmpAdd = wx.Bitmap(assets.image('add.png'), wx.BITMAP_TYPE_PNG)
+        self.btnAddSource = wx.BitmapButton(sourceBox, -1, bmpAdd, (50, 50))
+
+        bmpRemove = wx.Bitmap(assets.image('remove.png'), wx.BITMAP_TYPE_PNG)
+        self.btnRemoveSource = wx.BitmapButton(sourceBox, -1, bmpRemove, (50, 50))
         self.listSources = wx.ListCtrl(sourceBox, -1,
                                        style=wx.LC_REPORT
                                        | wx.LC_EDIT_LABELS
                                        )
 
-        self.listSources.InsertColumn(0, 'Caminho')
+        self.listSources.InsertColumn(0, 'Arquivo')
         self.listSources.SetColumnWidth(0, wx.LIST_AUTOSIZE_USEHEADER)
 
         self.btnOk = wx.Button(panel, -1, 'OK', (50, -1))
@@ -49,18 +58,18 @@ class SettingsDialog(wx.Dialog):
         destSizer = wx.BoxSizer(wx.HORIZONTAL)
         destSizer.Add(lblDest)
         destSizer.Add(self.txtDest, wx.SizerFlags(1).Border(wx.LEFT, 5))
-        destSizer.Add(self.btnDest, wx.SizerFlags(0).Border(wx.LEFT, 5))
+        destSizer.Add(self.btnSelectDest, wx.SizerFlags(0).Border(wx.LEFT, 5))
 
         sourceSizer = wx.BoxSizer(wx.HORIZONTAL)
         sourceSizer.Add(self.btnAddSource)
         sourceSizer.Add(self.btnRemoveSource, wx.SizerFlags(0).Border(wx.LEFT, 5))
 
         sourceBoxSizer = wx.BoxSizer(wx.VERTICAL)
-        sourceBoxSizer.Add(sourceSizer)
-        sourceBoxSizer.Add(self.listSources, wx.SizerFlags(0).Border(wx.TOP, 5))
+        sourceBoxSizer.Add(sourceSizer, wx.SizerFlags(0).Expand().Border(wx.TOP, 15))
+        sourceBoxSizer.Add(self.listSources, wx.SizerFlags(0).Expand().Border(wx.TOP, 5))
 
         sourceBoxSizerOuter = wx.BoxSizer(wx.VERTICAL)
-        sourceBoxSizerOuter.Add(sourceBoxSizer, wx.SizerFlags(0).Border(wx.ALL, 5))
+        sourceBoxSizerOuter.Add(sourceBoxSizer, wx.SizerFlags(0).Expand().Border(wx.ALL, 10))
         sourceBox.SetSizer(sourceBoxSizerOuter)
 
         footerSizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -70,15 +79,13 @@ class SettingsDialog(wx.Dialog):
         mainSizer = wx.BoxSizer(wx.VERTICAL)
         mainSizer.Add(intervalSizer)
         mainSizer.Add(destSizer, wx.SizerFlags(0).Expand().Border(wx.TOP, 10))
-        mainSizer.Add(sourceBox, wx.SizerFlags(0).Border(wx.TOP, 10))
+        mainSizer.Add(sourceBox, wx.SizerFlags(0).Expand().Border(wx.TOP, 10))
         mainSizer.Add(footerSizer, wx.SizerFlags(0).Right().Border(wx.TOP, 10))
 
         panelSizer = wx.BoxSizer(wx.VERTICAL)
         panelSizer.Add(mainSizer, wx.SizerFlags(0).Expand().Border(wx.ALL, 10))
 
         panel.SetSizer(panelSizer)
-        panel.Fit()
-        self.Fit()
 
     def createDestDialog(self):
         dlg = wx.DirDialog(self, "Selecione uma pasta",
@@ -130,7 +137,7 @@ class SettingsPresenter:
 
     def _loadViewFromModel(self):
         if self._scheduleModel.copyInterval:
-            self._view.txtInterval.SetValue(self._scheduleModel.copyInterval)
+            self._view.txtInterval.SetValue(str(self._scheduleModel.copyInterval))
 
         if self._copyModel.destination:
             self._view.txtDest.SetValue(self._copyModel.destination.as_posix())
@@ -146,7 +153,7 @@ class SettingsPresenter:
     def selectSource(self):
         dialog = self._view.createSourceDialog()
         if dialog.ShowModal() == wx.ID_OK:
-            self.insertSource(dialog.GetPath())
+            self.insertSource(Path(dialog.GetPath()).as_posix())
 
     def insertSource(self, path):
         if path:
@@ -196,7 +203,7 @@ class SettingsInteractor:
         self._presenter = presenter
         self._view = view
 
-        self._view.btnDest.Bind(wx.EVT_BUTTON, self.OnSelectDest)
+        self._view.btnSelectDest.Bind(wx.EVT_BUTTON, self.OnSelectDest)
         self._view.btnAddSource.Bind(wx.EVT_BUTTON, self.OnSelectSource)
         self._view.btnRemoveSource.Bind(wx.EVT_BUTTON, self.OnRemoveSource)
         self._view.btnCancel.Bind(wx.EVT_BUTTON, self.OnCancel)

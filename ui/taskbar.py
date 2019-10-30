@@ -2,14 +2,18 @@ import wx
 import wx.adv
 import platform
 
+from replic8.core.schedule import SchedulerState
 from ui import assets
 
 
+icon = assets.image('replic8_win.png')
+
+if platform.system() != 'Windows':
+    icon = assets.image('replic8.png')
+
+
 def create(frame, taskbarHandler):
-    icon = wx.Icon(assets.image('replic8_win.png'))
-    if platform.system() != 'Windows':
-        icon = wx.Icon(assets.image('replic8.png'))
-    return TaskBarPresenter(TaskBarIconView(frame, icon),
+    return TaskBarPresenter(TaskBarIconView(frame, wx.Icon(icon)),
                             TaskBarInteractor(),
                             taskbarHandler)
 
@@ -23,7 +27,6 @@ class TaskbarHandler:
 class TaskBarIconView(wx.adv.TaskBarIcon):
     def __init__(self, frame, icon):
         super().__init__()
-        self.SetIcon(icon, 'Replic8')
         self.frame = frame
         self._createPopupMenu()
 
@@ -48,6 +51,7 @@ class TaskBarPresenter:
         self.initView()
 
     def initView(self):
+        self._state = SchedulerState.UNINITIALIZED
         self.loadViewFromModel()
 
     def updateState(self, state):
@@ -58,11 +62,17 @@ class TaskBarPresenter:
         self._view.PopupMenu(self._view.popupMenu)
 
     def loadViewFromModel(self):
-        # self._view.setIconAndTooltip(icon, 'Replic8')
-        pass
+        if self._state == SchedulerState.UNINITIALIZED:
+            self._view.SetIcon(wx.Icon(icon), 'Replic8\nNão inicializado')
+        elif self._state == SchedulerState.ERROR:
+            self._view.SetIcon(wx.Icon(icon), 'Replic8\nErro ao copiar arquivos')
+        elif self._state == SchedulerState.COPYING:
+            self._view.SetIcon(wx.Icon(icon), 'Replic8\nCopiando arquivos...')
+        else:
+            self._view.SetIcon(wx.Icon(icon), 'Replic8')
 
-    def handleSingleLeftClick(self):
-        self._view.showPopupMenu()
+    def showBaloon(self, msg):
+        self._view.ShowBalloon('Replic8', msg)
 
     def handleSingleRightClick(self):
         self._view.showPopupMenu()
@@ -83,13 +93,9 @@ class TaskBarInteractor:
         self._presenter = presenter
         self._view = view
 
-        self._view.Bind(wx.adv.EVT_TASKBAR_LEFT_UP, self.OnLeftClickTaskBarIcon)
         self._view.Bind(wx.adv.EVT_TASKBAR_RIGHT_UP, self.OnRightClickTaskBarIcon)
         self._view.popupMenu.Bind(wx.EVT_MENU, self.OnSettings, self._view.menuItemSettings)
         self._view.popupMenu.Bind(wx.EVT_MENU, self.OnExit, self._view.menuItemExit)
-
-    def OnLeftClickTaskBarIcon(self, evt):
-        self._presenter.handleSingleLeftClick()
 
     def OnRightClickTaskBarIcon(self, evt):
         self._presenter.handleSingleRightClick()

@@ -1,7 +1,20 @@
 import time
+from pathlib import Path
 from threading import Thread
 from enum import Enum
 from datetime import date
+
+import wx
+
+EVT_TYPE_SCHEDULER = wx.NewEventType()
+EVT_SCHEDULER = wx.PyEventBinder(EVT_TYPE_SCHEDULER, 2)
+
+
+class SchedulerEvent(wx.PyCommandEvent):
+    def __init__(self, type, id, state, msg):
+        super().__init__(type, id)
+        self.state = state
+        self.msg = msg
 
 
 class NotInitializedError(Exception):
@@ -12,6 +25,7 @@ class SchedulerState(Enum):
     UNINITIALIZED = 0
     IDLE = 1
     COPYING = 2
+    ERROR = 3
 
 
 class Schedule(object):
@@ -67,12 +81,14 @@ class Scheduler(Thread):
     def _copyFiles(self):
         try:
             self._logger.info(f'Copying files { self._copier.sources } to folder { self._copier.destination }')
-            self._state = SchedulerState.COPYING
+            fileNames = ','.join([Path(f).name for f in self._copier.sources])
+            self._setStateAndPostEvent(SchedulerState.COPYING, f'Copiando o(s) arquivo(s) { fileNames } para a pasta { self._copier.destination }')
             self._copier.perform()
             self._scheduleModel.setLastCopy(date.today())
+            self._setStateAndPostEvent(SchedulerState.IDLE, 'Arquivos copiados com sucesso.')
             self._logger.info('Copy succeeded')
-            self._state = SchedulerState.IDLE
         except Exception as err:
+            self._setStateAndPostEvent(SchedulerState.ERROR)
             self._logger.exception(err)
             self.abort()
 
@@ -86,6 +102,11 @@ class Scheduler(Thread):
         today = date.today()
         interval = today - self._scheduleModel.lastCopy
         return interval.days >= self._scheduleModel.copyInterval
+
+    def _setStateAndPostEvent(self, state, msg=''):
+        self._state = state
+        evt = SchedulerEvent(EVT_TYPE_SCHEDULER, -1, self._state, msg)
+        wx.PostEvent(self._view, evt)
 
     def start(self):
         self._state = SchedulerState.IDLE
