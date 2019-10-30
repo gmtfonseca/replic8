@@ -67,7 +67,7 @@ class ScheduleModel(Model):
         self.saveToDisk(self._schedule)
 
     def setCopyInterval(self, copyInterval):
-        self._schedule.copyInterval = copyInterval
+        self._schedule.copyInterval = int(copyInterval)
         self.saveToDisk(self._schedule)
 
     def clear(self):

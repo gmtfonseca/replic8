@@ -22,7 +22,8 @@ class MainPresenter:
         interactor.Install(self, self._view)
         self._app = app
         self._createTaskBarIcon()
-        settings.show(self._view, self._app.scheduleModel, self._app.copyModel, self._app.logger)
+        self._app.createSchedulerManager(self._view)
+        self._initialize()
 
     def _createTaskBarIcon(self):
         taskbarHandler = taskbar.TaskbarHandler(self.showSettings, self.quit)
@@ -30,10 +31,13 @@ class MainPresenter:
 
     def _initialize(self):
         if not self._app.ready():
-            settings.show(self._view, self._app.scheduleModel, self._app.copyModel, self._app.logger)
+            settings.show(self._view,
+                          self._app.scheduleModel,
+                          self._app.copyModel,
+                          self._app.schedulerManager,
+                          self._app.logger)
         else:
-            # Start sync
-            pass
+            self._app.schedulerManager.start()
 
     def updateChildrenState(self, syncState):
         self._taskBarIcon.updateState(syncState)

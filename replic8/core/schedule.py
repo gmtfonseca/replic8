@@ -4,6 +4,10 @@ from enum import Enum
 from datetime import date
 
 
+class NotInitializedError(Exception):
+    pass
+
+
 class SchedulerState(Enum):
     UNINITIALIZED = 0
     IDLE = 1
@@ -18,6 +22,23 @@ class Schedule(object):
     @classmethod
     def empty(cls):
         return cls(None, None)
+
+
+class SchedulerManager:
+    def __init__(self, schedulerFactory):
+        self._schedulerFactory = schedulerFactory
+        self._scheduler = None
+
+    def start(self):
+        self._scheduler = self._schedulerFactory()
+        self._scheduler.start()
+
+    def restart(self):
+        self.stop()
+        self.start()
+
+    def stop(self):
+        self._scheduler.abort()
 
 
 class Scheduler(Thread):

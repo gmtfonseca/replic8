@@ -1,4 +1,6 @@
-from replic8.core.schedule import Scheduler
+from functools import partial
+
+from replic8.core.schedule import Scheduler, SchedulerManager, NotInitializedError
 from replic8.core.copy import Copier
 from replic8.core.model import ScheduleModel, CopyModel
 from replic8.core.logger import LoggerFactory
@@ -10,7 +12,7 @@ class App(object):
         self._scheduleModel = ScheduleModel(self._config['storage']['schedule_data_path'])
         self._copyModel = CopyModel(self._config['storage']['copy_data_path'])
         self._logger = self._createLogger()
-        self._scheduler = None
+        self._schedulerManager = None
 
     def _createLogger(self):
         if self._config['env'] == 'dev':
@@ -21,13 +23,23 @@ class App(object):
             logger = LoggerFactory.getRootLogger()
         return logger
 
-    def createScheduler(self, view):
+    def createSchedulerManager(self, view):
+        self._schedulerManager = SchedulerManager(partial(self._schedulerFactory, view))
+
+    def _schedulerFactory(self, view):
         delay = self._config['scheduler']['delay']
         copier = Copier(self._copyModel)
-        self._scheduler = Scheduler(copier, delay, self._scheduleModel, self._logger)
+        return Scheduler(view, copier, delay, self._scheduleModel, self._logger)
 
     def ready(self):
         return self._scheduleModel.copyInterval and self._copyModel.destination and len(self._copyModel.sources) > 0
+
+    @property
+    def schedulerManager(self):
+        if not self._schedulerManager:
+            raise NotInitializedError()
+
+        return self._schedulerManager
 
     @property
     def scheduleModel(self):

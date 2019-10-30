@@ -2,11 +2,12 @@ import wx
 from pathlib import Path
 
 
-def show(parent, scheduleModel, copyModel, logger):
+def show(parent, scheduleModel, copyModel, schedulerManager, logger):
     return SettingsPresenter(SettingsDialog(parent, 'Configurações'),
                              SettingsInteractor(),
                              scheduleModel,
                              copyModel,
+                             schedulerManager,
                              logger)
 
 
@@ -18,7 +19,6 @@ class SettingsDialog(wx.Dialog):
 
     def _initLayout(self):
         panel = wx.Panel(self)
-        # panel.SetBackgroundColour(wx.WHITE)
 
         lblInterval = wx.StaticText(panel, -1, 'Intervalo (dias)', size=(100, -1))
         self.txtInterval = wx.TextCtrl(panel, -1, '', size=(50, -1))
@@ -118,11 +118,12 @@ class SettingsDialog(wx.Dialog):
 
 
 class SettingsPresenter:
-    def __init__(self, view, interactor, scheduleModel, copyModel, logger):
+    def __init__(self, view, interactor, scheduleModel, copyModel, schedulerManager, logger):
         self._view = view
         interactor.Install(self, self._view)
         self._scheduleModel = scheduleModel
         self._copyModel = copyModel
+        self._schedulerManager = schedulerManager
         self._logger = logger
         self._loadViewFromModel()
         self._view.start()
@@ -183,6 +184,7 @@ class SettingsPresenter:
             self._copyModel.setDestination(self._view.txtDest.GetValue())
             sources = [self._view.listSources.GetItem(i, 0).GetText() for i in range(self._view.listSources.ItemCount)]
             self._copyModel.setSources(sources)
+            self._schedulerManager.start()
             self.quit()
         except Exception as err:
             self._view.showConfirmChangesErrorDialog()

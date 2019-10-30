@@ -85,8 +85,8 @@ class TaskBarInteractor:
 
         self._view.Bind(wx.adv.EVT_TASKBAR_LEFT_UP, self.OnLeftClickTaskBarIcon)
         self._view.Bind(wx.adv.EVT_TASKBAR_RIGHT_UP, self.OnRightClickTaskBarIcon)
-        view.popupMenu.Bind(wx.EVT_MENU, self.OnSettings, view.menuItemSettings)
-        view.popupMenu.Bind(wx.EVT_MENU, self.OnExit, view.menuItemExit)
+        self._view.popupMenu.Bind(wx.EVT_MENU, self.OnSettings, self._view.menuItemSettings)
+        self._view.popupMenu.Bind(wx.EVT_MENU, self.OnExit, self._view.menuItemExit)
 
     def OnLeftClickTaskBarIcon(self, evt):
         self._presenter.handleSingleLeftClick()
