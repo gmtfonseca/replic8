@@ -1,6 +1,6 @@
 import wx
 
-from replic8.core.schedule import EVT_SCHEDULER
+from replic8.core.schedule import EVT_SCHEDULER, SchedulerState
 from ui import taskbar, settings
 
 
@@ -48,12 +48,13 @@ class MainPresenter:
         self.updateChildren(evt)
 
     def updateChildren(self, evt):
-        self.updateTaskBarIcon(evt.state, evt.msg)
+        self.updateTaskBarIcon(evt.state, evt.title, evt.text)
 
-    def updateTaskBarIcon(self, state, msg):
+    def updateTaskBarIcon(self, state, title, text):
         self._taskBarIcon.updateState(state)
-        if msg:
-            self._taskBarIcon.showBaloon(msg)
+        if title:
+            flags = wx.ICON_ERROR if state == SchedulerState.ERROR else wx.ICON_INFORMATION
+            self._taskBarIcon.showBaloon(title, text, flags)
 
     def showSettings(self):
         if not self._hasActiveWindow():

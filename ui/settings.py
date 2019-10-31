@@ -22,6 +22,8 @@ class SettingsFrame(wx.Frame):
         super().__init__(parent=parent, title=title,
                          style=wx.SYSTEM_MENU | wx.CAPTION | wx.CLOSE_BOX | wx.FRAME_NO_TASKBAR,
                          size=(500, height))
+        icon = wx.Icon(assets.image('replic8_win.png'))
+        self.SetIcon(icon)
         self._initLayout()
 
     def _initLayout(self):
@@ -53,8 +55,8 @@ class SettingsFrame(wx.Frame):
         self.listSources.InsertColumn(0, 'Arquivo')
         self.listSources.SetColumnWidth(0, wx.LIST_AUTOSIZE_USEHEADER)
 
-        self.btnOk = wx.Button(panel, -1, 'OK', (50, -1))
-        self.btnCancel = wx.Button(panel, -1, 'Cancelar', (50, -1))
+        self.btnOk = wx.Button(panel, -1, 'OK', (50, 75))
+        self.btnCancel = wx.Button(panel, -1, 'Cancelar', (50, 75))
 
         intervalSizer = wx.BoxSizer(wx.HORIZONTAL)
         intervalSizer.Add(lblInterval)

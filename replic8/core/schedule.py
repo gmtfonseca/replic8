@@ -11,10 +11,11 @@ EVT_SCHEDULER = wx.PyEventBinder(EVT_TYPE_SCHEDULER, 2)
 
 
 class SchedulerEvent(wx.PyCommandEvent):
-    def __init__(self, type, id, state, msg):
+    def __init__(self, type, id, state, title, text):
         super().__init__(type, id)
         self.state = state
-        self.msg = msg
+        self.title = title
+        self.text = text
 
 
 class NotInitializedError(Exception):
@@ -55,6 +56,9 @@ class SchedulerManager:
         self._scheduler.abort()
 
     def forceCopy(self):
+        if not self._scheduler.isRunning():
+            self.restart()
+
         self._scheduler.forceCopy()
 
 
@@ -87,16 +91,24 @@ class Scheduler(Thread):
         try:
             self._logger.info(f'Copying files { self._copier.sources } to folder { self._copier.destination }')
             fileNames = ','.join([Path(f).name for f in self._copier.sources])
-            self._setStateAndPostEvent(SchedulerState.COPYING, f'Copiando o(s) arquivo(s) "{ fileNames }" para a pasta "{ self._copier.destination }".')
+            self._setStateAndPostEvent(SchedulerState.COPYING,
+                                       'Aviso',
+                                       f'Copiando os arquivo(s) "{ fileNames }" para a pasta "{ self._copier.destination }".')
             self._copier.perform()
             self._scheduleModel.setLastCopy(date.today())
-            self._setStateAndPostEvent(SchedulerState.IDLE, 'Arquivos copiados com sucesso.')
+            self._setStateAndPostEvent(SchedulerState.IDLE,
+                                       'Sucesso',
+                                       'Arquivos copiados com sucesso.')
             self._logger.info('Copy succeeded')
         except Exception as e:
             if isinstance(e, FileNotFoundError):
-                self._setStateAndPostEvent(SchedulerState.ERROR, f'Arquivo "{ e.filename }" não foi encontrado.')
+                self._setStateAndPostEvent(SchedulerState.ERROR,
+                                           'Erro',
+                                           f'Arquivo "{ e.filename }" não foi encontrado.')
             else:
-                self._setStateAndPostEvent(SchedulerState.ERROR, 'Ocorreu um erro inesperado ao copiar os arquivos.')
+                self._setStateAndPostEvent(SchedulerState.ERROR,
+                                           'Erro',
+                                           'Ocorreu um erro inesperado ao copiar os arquivos.')
             self._logger.exception(e)
             self.abort()
 
@@ -111,9 +123,9 @@ class Scheduler(Thread):
         interval = today - self._scheduleModel.lastCopy
         return interval.days >= self._scheduleModel.copyInterval
 
-    def _setStateAndPostEvent(self, state, msg=''):
+    def _setStateAndPostEvent(self, state, title='', text=''):
         self._state = state
-        evt = SchedulerEvent(EVT_TYPE_SCHEDULER, -1, self._state, msg)
+        evt = SchedulerEvent(EVT_TYPE_SCHEDULER, -1, self._state, title, text)
         wx.PostEvent(self._view, evt)
 
     def start(self):
@@ -125,3 +137,6 @@ class Scheduler(Thread):
 
     def forceCopy(self):
         self._forceCopy = True
+
+    def isRunning(self):
+        return not self._abort and self.is_alive()

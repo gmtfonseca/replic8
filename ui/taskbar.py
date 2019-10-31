@@ -57,7 +57,7 @@ class TaskBarPresenter:
     def _createPopupMenu(self):
         popupMenu = wx.Menu()
         menuItemSettings = popupMenu.Append(-1, 'Configurações')
-        menuItemForceCopy = popupMenu.Append(-1, 'Forçar cópia')
+        menuItemForceCopy = popupMenu.Append(-1, 'Copiar agora')
         popupMenu.AppendSeparator()
         menuItemExit = popupMenu.Append(wx.ID_EXIT, 'Sair')
 
@@ -77,8 +77,8 @@ class TaskBarPresenter:
         else:
             self._view.SetIcon(wx.Icon(icon), 'Replic8')
 
-    def showBaloon(self, msg):
-        self._view.ShowBalloon('Replic8', msg)
+    def showBaloon(self, title, text, flags):
+        self._view.ShowBalloon(title, text, 3000, flags)
 
     def _showSettings(self):
         self._taskbarHandler.onSettings()
