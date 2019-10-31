@@ -93,12 +93,12 @@ class Scheduler(Thread):
             fileNames = ','.join([Path(f).name for f in self._copier.sources])
             self._setStateAndPostEvent(SchedulerState.COPYING,
                                        'Aviso',
-                                       f'Copiando os arquivo(s) "{ fileNames }" para a pasta "{ self._copier.destination }".')
+                                       f'Copiando o(s) arquivo(s) "{ fileNames }" para a pasta "{ self._copier.destination }".')
             self._copier.perform()
             self._scheduleModel.setLastCopy(date.today())
             self._setStateAndPostEvent(SchedulerState.IDLE,
                                        'Sucesso',
-                                       'Arquivos copiados com sucesso.')
+                                       'Arquivo(s) copiado(s) com sucesso.')
             self._logger.info('Copy succeeded')
         except Exception as e:
             if isinstance(e, FileNotFoundError):
