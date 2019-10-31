@@ -14,7 +14,6 @@ if platform.system() != 'Windows':
 
 def create(frame, taskbarHandler):
     return TaskBarPresenter(TaskBarIconView(frame, wx.Icon(icon)),
-                            TaskBarInteractor(),
                             taskbarHandler)
 
 
@@ -28,13 +27,6 @@ class TaskBarIconView(wx.adv.TaskBarIcon):
     def __init__(self, frame, icon):
         super().__init__()
         self.frame = frame
-        self._createPopupMenu()
-
-    def _createPopupMenu(self):
-        self.popupMenu = wx.Menu()
-        self.menuItemSettings = self.popupMenu.Append(-1, 'Configurações')
-        self.popupMenu.AppendSeparator()
-        self.menuItemExit = self.popupMenu.Append(wx.ID_EXIT, 'Sair')
 
     def showPopupMenu(self):
         self.PopupMenu(self.popupMenu)
@@ -44,14 +36,14 @@ class TaskBarIconView(wx.adv.TaskBarIcon):
 
 
 class TaskBarPresenter:
-    def __init__(self, view, interactor, taskbarHandler):
+    def __init__(self, view, taskbarHandler):
         self._view = view
-        interactor.Install(self, self._view)
         self._taskbarHandler = taskbarHandler
         self.initView()
 
     def initView(self):
         self._state = SchedulerState.UNINITIALIZED
+        self._view.CreatePopupMenu = self._createPopupMenu
         self.loadViewFromModel()
 
     def updateState(self, state):
@@ -60,6 +52,17 @@ class TaskBarPresenter:
 
     def showPopupMenu(self):
         self._view.PopupMenu(self._view.popupMenu)
+
+    def _createPopupMenu(self):
+        popupMenu = wx.Menu()
+        menuItemSettings = popupMenu.Append(-1, 'Configurações')
+        popupMenu.AppendSeparator()
+        menuItemExit = popupMenu.Append(wx.ID_EXIT, 'Sair')
+
+        popupMenu.Bind(wx.EVT_MENU, self.OnShowSettings, menuItemSettings)
+        popupMenu.Bind(wx.EVT_MENU, self.OnExit, menuItemExit)
+
+        return popupMenu
 
     def loadViewFromModel(self):
         if self._state == SchedulerState.UNINITIALIZED:
@@ -74,9 +77,6 @@ class TaskBarPresenter:
     def showBaloon(self, msg):
         self._view.ShowBalloon('Replic8', msg)
 
-    def handleSingleRightClick(self):
-        self._view.showPopupMenu()
-
     def showSettings(self):
         self._taskbarHandler.onSettings()
 
@@ -86,22 +86,8 @@ class TaskBarPresenter:
     def destroy(self):
         self._view.Destroy()
 
-
-class TaskBarInteractor:
-
-    def Install(self, presenter, view):
-        self._presenter = presenter
-        self._view = view
-
-        self._view.Bind(wx.adv.EVT_TASKBAR_RIGHT_UP, self.OnRightClickTaskBarIcon)
-        self._view.popupMenu.Bind(wx.EVT_MENU, self.OnSettings, self._view.menuItemSettings)
-        self._view.popupMenu.Bind(wx.EVT_MENU, self.OnExit, self._view.menuItemExit)
-
-    def OnRightClickTaskBarIcon(self, evt):
-        self._presenter.handleSingleRightClick()
-
-    def OnSettings(self, evt):
-        self._presenter.showSettings()
+    def OnShowSettings(self, evt):
+        self.showSettings()
 
     def OnExit(self, evt):
-        self._presenter.exit()
+        self.exit()

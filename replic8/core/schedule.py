@@ -88,7 +88,7 @@ class Scheduler(Thread):
             self._setStateAndPostEvent(SchedulerState.IDLE, 'Arquivos copiados com sucesso.')
             self._logger.info('Copy succeeded')
         except Exception as err:
-            self._setStateAndPostEvent(SchedulerState.ERROR)
+            self._setStateAndPostEvent(SchedulerState.ERROR, 'Ocorreu um erro ao copiar os arquivos')
             self._logger.exception(err)
             self.abort()
 

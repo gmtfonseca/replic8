@@ -1,3 +1,4 @@
+import sys
 from pathlib import Path
 
 import wx
@@ -5,8 +6,8 @@ import wx
 from ui import assets
 
 
-def show(parent, scheduleModel, copyModel, schedulerManager, logger):
-    return SettingsPresenter(SettingsDialog(parent, 'Configurações'),
+def create(parent, scheduleModel, copyModel, schedulerManager, logger):
+    return SettingsPresenter(SettingsFrame(parent, 'Configurações'),
                              SettingsInteractor(),
                              scheduleModel,
                              copyModel,
@@ -14,19 +15,22 @@ def show(parent, scheduleModel, copyModel, schedulerManager, logger):
                              logger)
 
 
-class SettingsDialog(wx.Dialog):
+class SettingsFrame(wx.Frame):
 
     def __init__(self, parent, title):
-        super().__init__(parent=parent, title=title, size=(500, 390))
+        height = 350 if sys.platform == 'win32' else 325
+        super().__init__(parent=parent, title=title, size=(500, height))
         self._initLayout()
 
     def _initLayout(self):
         panel = wx.Panel(self)
 
-        lblInterval = wx.StaticText(panel, -1, 'Intervalo (dias)', size=(95, -1))
+        widthLabel = 95 if sys.platform == 'win32' else 100
+
+        lblInterval = wx.StaticText(panel, -1, 'Intervalo (dias)', size=(widthLabel, -1))
         self.txtInterval = wx.TextCtrl(panel, -1, '', size=(50, -1))
 
-        lblDest = wx.StaticText(panel, -1, 'Pasta de destino', size=(95, -1))
+        lblDest = wx.StaticText(panel, -1, 'Pasta de destino', size=(widthLabel, -1))
         self.txtDest = wx.TextCtrl(panel, -1, '')
         self.txtDest.Disable()
 
@@ -42,7 +46,6 @@ class SettingsDialog(wx.Dialog):
         self.btnRemoveSource = wx.BitmapButton(sourceBox, -1, bmpRemove, (50, 50))
         self.listSources = wx.ListCtrl(sourceBox, -1,
                                        style=wx.LC_REPORT
-                                       | wx.LC_EDIT_LABELS
                                        )
 
         self.listSources.InsertColumn(0, 'Arquivo')
@@ -65,7 +68,8 @@ class SettingsDialog(wx.Dialog):
         sourceSizer.Add(self.btnRemoveSource, wx.SizerFlags(0).Border(wx.LEFT, 5))
 
         sourceBoxSizer = wx.BoxSizer(wx.VERTICAL)
-        sourceBoxSizer.Add(sourceSizer, wx.SizerFlags(0).Expand().Border(wx.TOP, 15))
+        borderTop = 15 if sys.platform == 'win32' else 0
+        sourceBoxSizer.Add(sourceSizer, wx.SizerFlags(0).Expand().Border(wx.TOP, borderTop))
         sourceBoxSizer.Add(self.listSources, wx.SizerFlags(0).Expand().Border(wx.TOP, 5))
 
         sourceBoxSizerOuter = wx.BoxSizer(wx.VERTICAL)
@@ -119,21 +123,20 @@ class SettingsDialog(wx.Dialog):
         self.Destroy()
 
     def start(self):
-        self.CenterOnScreen()
         self.Raise()
-        self.ShowModal()
+        self.Show()
 
 
 class SettingsPresenter:
     def __init__(self, view, interactor, scheduleModel, copyModel, schedulerManager, logger):
         self._view = view
+        self._view.CenterOnScreen()
         interactor.Install(self, self._view)
         self._scheduleModel = scheduleModel
         self._copyModel = copyModel
         self._schedulerManager = schedulerManager
         self._logger = logger
         self._loadViewFromModel()
-        self._view.start()
 
     def _loadViewFromModel(self):
         if self._scheduleModel.copyInterval:
@@ -196,6 +199,12 @@ class SettingsPresenter:
         except Exception as err:
             self._view.showConfirmChangesErrorDialog()
             self._logger.exception(err)
+
+    def show(self):
+        self._view.start()
+
+    def isActive(self):
+        return bool(self._view)
 
 
 class SettingsInteractor:

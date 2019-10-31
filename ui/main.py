@@ -24,6 +24,7 @@ class MainPresenter:
         self._app = app
         self._createTaskBarIcon()
         self._app.createSchedulerManager(self._view)
+        self._activeWindow = None
         self._initialize()
 
     def _createTaskBarIcon(self):
@@ -35,6 +36,13 @@ class MainPresenter:
             self.showSettings()
         else:
             self._app.schedulerManager.start()
+
+    def _setActiveWindowAndShow(self, window):
+        self._activeWindow = window
+        self._activeWindow.show()
+
+    def _hasActiveWindow(self):
+        return self._activeWindow and self._activeWindow.isActive()
 
     def handleSchedulerStateUpdate(self, evt):
         self.updateChildren(evt)
@@ -48,11 +56,13 @@ class MainPresenter:
             self._taskBarIcon.showBaloon(msg)
 
     def showSettings(self):
-        settings.show(self._view,
-                      self._app.scheduleModel,
-                      self._app.copyModel,
-                      self._app.schedulerManager,
-                      self._app.logger)
+        if not self._hasActiveWindow():
+            self._activeWindow = settings.create(None,
+                                                 self._app.scheduleModel,
+                                                 self._app.copyModel,
+                                                 self._app.schedulerManager,
+                                                 self._app.logger)
+        self._activeWindow.show()
 
     def quit(self):
         self._taskBarIcon.destroy()
