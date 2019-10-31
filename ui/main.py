@@ -28,7 +28,7 @@ class MainPresenter:
         self._initialize()
 
     def _createTaskBarIcon(self):
-        taskbarHandler = taskbar.TaskbarHandler(self.showSettings, self.quit)
+        taskbarHandler = taskbar.TaskbarHandler(self.showSettings, self.quit, self.forceCopy)
         self._taskBarIcon = taskbar.create(self._view, taskbarHandler)
 
     def _initialize(self):
@@ -63,6 +63,9 @@ class MainPresenter:
                                                  self._app.schedulerManager,
                                                  self._app.logger)
         self._activeWindow.show()
+
+    def forceCopy(self):
+        self._app.schedulerManager.forceCopy()
 
     def quit(self):
         self._taskBarIcon.destroy()

@@ -54,6 +54,9 @@ class SchedulerManager:
     def stop(self):
         self._scheduler.abort()
 
+    def forceCopy(self):
+        self._scheduler.forceCopy()
+
 
 class Scheduler(Thread):
     def __init__(self, view, copier, delay, scheduleModel, logger):
@@ -66,6 +69,7 @@ class Scheduler(Thread):
         self._logger = logger
         self._state = SchedulerState.UNINITIALIZED
         self._abort = False
+        self._forceCopy = False
 
     def run(self):
         while True:
@@ -75,21 +79,25 @@ class Scheduler(Thread):
             time.sleep(self._delay)
 
     def _checkSchedule(self):
-        if self._timeToCopy():
+        if self._timeToCopy() or self._forceCopy:
             self._copyFiles()
+            self._forceCopy = False
 
     def _copyFiles(self):
         try:
             self._logger.info(f'Copying files { self._copier.sources } to folder { self._copier.destination }')
             fileNames = ','.join([Path(f).name for f in self._copier.sources])
-            self._setStateAndPostEvent(SchedulerState.COPYING, f'Copiando o(s) arquivo(s) { fileNames } para a pasta { self._copier.destination }')
+            self._setStateAndPostEvent(SchedulerState.COPYING, f'Copiando o(s) arquivo(s) "{ fileNames }" para a pasta "{ self._copier.destination }".')
             self._copier.perform()
             self._scheduleModel.setLastCopy(date.today())
             self._setStateAndPostEvent(SchedulerState.IDLE, 'Arquivos copiados com sucesso.')
             self._logger.info('Copy succeeded')
-        except Exception as err:
-            self._setStateAndPostEvent(SchedulerState.ERROR, 'Ocorreu um erro ao copiar os arquivos')
-            self._logger.exception(err)
+        except Exception as e:
+            if isinstance(e, FileNotFoundError):
+                self._setStateAndPostEvent(SchedulerState.ERROR, f'Arquivo "{ e.filename }" não foi encontrado.')
+            else:
+                self._setStateAndPostEvent(SchedulerState.ERROR, 'Ocorreu um erro inesperado ao copiar os arquivos.')
+            self._logger.exception(e)
             self.abort()
 
     def _timeToCopy(self):
@@ -109,8 +117,11 @@ class Scheduler(Thread):
         wx.PostEvent(self._view, evt)
 
     def start(self):
-        self._state = SchedulerState.IDLE
+        self._setStateAndPostEvent(SchedulerState.IDLE)
         super().start()
 
     def abort(self):
         self._abort = True
+
+    def forceCopy(self):
+        self._forceCopy = True

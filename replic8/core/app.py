@@ -17,7 +17,7 @@ class App(object):
     def _createLogger(self):
         if self._config['env'] == 'dev':
             logger = LoggerFactory.getDevLogger()
-        elif self._config == 'prod':
+        elif self._config['env'] == 'prod':
             logger = LoggerFactory.getProdLogger(self._config['storage']['log_path'])
         else:
             logger = LoggerFactory.getRootLogger()
