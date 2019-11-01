@@ -78,7 +78,7 @@ class Scheduler(Thread):
     def run(self):
         while True:
             if self._abort:
-                return
+                break
             self._checkSchedule()
             time.sleep(self._delay)
 
@@ -90,7 +90,7 @@ class Scheduler(Thread):
     def _copyFiles(self):
         try:
             self._logger.info(f'Copying files { self._copier.sources } to folder { self._copier.destination }')
-            fileNames = ','.join([Path(f).name for f in self._copier.sources])
+            fileNames = ', '.join([Path(f).name for f in self._copier.sources])
             self._setStateAndPostEvent(SchedulerState.COPYING,
                                        'Aviso',
                                        f'Copiando o(s) arquivo(s) "{ fileNames }" para a pasta "{ self._copier.destination }".')

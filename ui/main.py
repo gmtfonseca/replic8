@@ -69,6 +69,9 @@ class MainPresenter:
         self._app.schedulerManager.forceCopy()
 
     def quit(self):
+        if self._hasActiveWindow():
+            self._activeWindow.quit()
+
         self._taskBarIcon.destroy()
         self._view.destroy()
 

@@ -21,7 +21,7 @@ config = {
     'scheduler': {
         'delay': 5
     },
-    'env': 'dev'
+    'env': 'prod'
 }
 
 

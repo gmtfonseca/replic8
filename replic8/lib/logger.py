@@ -25,6 +25,7 @@ class LoggerFactory:
         handler.setLevel(logging.INFO)
         handler.setFormatter(formatter)
         logger = logging.getLogger('prodLogger')
+        logger.setLevel(logging.INFO)
         logger.addHandler(handler)
         logger.propagate = False
         return logger
