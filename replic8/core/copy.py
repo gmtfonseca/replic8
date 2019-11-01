@@ -1,6 +1,8 @@
 from pathlib import Path
 from shutil import copyfile
 
+from replic8.lib.compression import Compression
+
 
 class Source(object):
     '''
@@ -82,7 +84,7 @@ class Copier(object):
         sources = self._copyModel.sources
         for source in sources:
             destFile = destFolder / source.name
-            copyfile(source, destFile)
+            Compression.copyCompressed(source, destFile)
 
     @property
     def sources(self):

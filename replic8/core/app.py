@@ -3,7 +3,7 @@ from functools import partial
 from replic8.core.schedule import Scheduler, SchedulerManager, NotInitializedError
 from replic8.core.copy import Copier
 from replic8.core.model import ScheduleModel, CopyModel
-from replic8.core.logger import LoggerFactory
+from replic8.lib.logger import LoggerFactory
 
 
 class App(object):

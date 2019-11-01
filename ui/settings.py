@@ -18,7 +18,7 @@ def create(parent, scheduleModel, copyModel, schedulerManager, logger):
 class SettingsFrame(wx.Frame):
 
     def __init__(self, parent, title):
-        height = 390 if sys.platform == 'win32' else 325
+        height = 385 if sys.platform == 'win32' else 325
         super().__init__(parent=parent, title=title,
                          style=wx.SYSTEM_MENU | wx.CAPTION | wx.CLOSE_BOX | wx.FRAME_NO_TASKBAR,
                          size=(500, height))
