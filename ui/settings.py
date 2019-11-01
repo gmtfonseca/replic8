@@ -22,8 +22,6 @@ class SettingsFrame(wx.Frame):
         super().__init__(parent=parent, title=title,
                          style=wx.SYSTEM_MENU | wx.CAPTION | wx.CLOSE_BOX | wx.FRAME_NO_TASKBAR,
                          size=(500, height))
-        icon = wx.Icon(assets.image('replic8_win.png'))
-        self.SetIcon(icon)
         self._initLayout()
 
     def _initLayout(self):
