@@ -1,8 +1,8 @@
 import time
+import datetime
 from pathlib import Path
 from threading import Thread
 from enum import Enum
-from datetime import date, datetime
 
 import wx
 
@@ -30,10 +30,10 @@ class SchedulerState(Enum):
 
 
 class Schedule(object):
-    def __init__(self, copyInterval, startHour, endHour, lastCopy):
+    def __init__(self, copyInterval, startTime, endTime, lastCopy):
         self.copyInterval = copyInterval
-        self.startHour = startHour
-        self.endHour = endHour
+        self.startTime = startTime
+        self.endTime = endTime
         self.lastCopy = lastCopy
 
     @classmethod
@@ -97,7 +97,7 @@ class Scheduler(Thread):
                                        'Aviso',
                                        f'Copiando o(s) arquivo(s) "{ fileNames }" para a pasta "{ self._copier.destination }".')
             self._copier.perform()
-            self._scheduleModel.setLastCopy(date.today())
+            self._scheduleModel.setLastCopy(datetime.date.today())
             self._setStateAndPostEvent(SchedulerState.IDLE,
                                        'Sucesso',
                                        'Arquivo(s) copiado(s) com sucesso.')
@@ -118,8 +118,8 @@ class Scheduler(Thread):
         if not self._scheduleModel.copyInterval:
             return False
 
-        currHour = datetime.now().hour
-        today = date.today()
+        currTime = datetime.datetime.now().time()
+        today = datetime.date.today()
 
         properInterval = False
         if self._scheduleModel.lastCopy:
@@ -127,19 +127,19 @@ class Scheduler(Thread):
         else:
             properInterval = True
 
-        return properInterval and self._hourInRange(currHour,
-                                                    self._scheduleModel.startHour,
-                                                    self._scheduleModel.endHour)
+        return properInterval and self._timeInRange(currTime,
+                                                    self._scheduleModel.startTime,
+                                                    self._scheduleModel.endTime)
 
-    def _hourInRange(self, currHour, startHour, endHour):
-        if not startHour and not endHour:
+    def _timeInRange(self, currTime, startTime, endTime):
+        if startTime == datetime.time(0, 0, 0) and endTime == datetime.time(0, 0, 0):
             return True
 
-        if startHour <= endHour:
+        if startTime <= endTime:
 
-            return startHour <= currHour <= endHour
+            return startTime <= currTime <= endTime
         else:
-            return startHour <= currHour or currHour <= endHour
+            return startTime <= currTime or currTime <= endTime
 
     def _setStateAndPostEvent(self, state, title='', text=''):
         self._state = state

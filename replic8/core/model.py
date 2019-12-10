@@ -1,5 +1,6 @@
 import pickle
 from pathlib import Path
+from datetime import time
 
 from replic8.core.schedule import Schedule
 from replic8.core.copy import Copy
@@ -70,12 +71,12 @@ class ScheduleModel(Model):
         self._schedule.copyInterval = int(copyInterval)
         self.saveToDisk(self._schedule)
 
-    def setStartHour(self, startHour):
-        self._schedule.startHour = int(startHour)
+    def setStartTime(self, hour, minute, second):
+        self._schedule.startTime = time(hour, minute, second)
         self.saveToDisk(self._schedule)
 
-    def setEndHour(self, endHour):
-        self._schedule.endHour = int(endHour)
+    def setEndTime(self, hour, minute, second):
+        self._schedule.endTime = time(hour, minute, second)
         self.saveToDisk(self._schedule)
 
     def clear(self):
@@ -87,12 +88,20 @@ class ScheduleModel(Model):
         return self._schedule.copyInterval
 
     @property
-    def startHour(self):
-        return self._schedule.startHour
+    def startTime(self):
+        return self._schedule.startTime
 
     @property
-    def endHour(self):
-        return self._schedule.endHour
+    def startTimeTuple(self):
+        return (self._schedule.startTime.hour, self._schedule.startTime.minute, self._schedule.startTime.second)
+
+    @property
+    def endTime(self):
+        return self._schedule.endTime
+
+    @property
+    def endTimeTuple(self):
+        return (self._schedule.endTime.hour, self._schedule.endTime.minute, self._schedule.endTime.second)
 
     @property
     def lastCopy(self):

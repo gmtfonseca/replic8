@@ -2,6 +2,7 @@ import sys
 from pathlib import Path
 
 import wx
+import wx.adv
 
 from ui import assets
 
@@ -40,8 +41,15 @@ class SettingsFrame(wx.Frame):
 
         lblTime = wx.StaticText(
             panel, -1, 'Horário', size=(widthLabel, -1))
-        self.txtStartHour = wx.TextCtrl(panel, -1, '', size=(50, -1))
-        self.txtEndHour = wx.TextCtrl(panel, -1, '', size=(50, -1))
+
+        self.txtStartTime = wx.adv.TimePickerCtrl(panel, size=(120, -1),
+                                                  style=wx.adv.TP_DEFAULT)
+
+        lblTimeTo = wx.StaticText(
+            panel, -1, 'até', size=(18, -1))
+
+        self.txtEndTime = wx.adv.TimePickerCtrl(panel, size=(120, -1),
+                                                style=wx.adv.TP_DEFAULT)
 
         bmpFolder = wx.Bitmap(assets.image('folder.png'), wx.BITMAP_TYPE_PNG)
         self.btnSelectDest = wx.BitmapButton(panel, -1, bmpFolder, (50, 50))
@@ -73,10 +81,10 @@ class SettingsFrame(wx.Frame):
 
         timeSizer = wx.BoxSizer(wx.HORIZONTAL)
         timeSizer.Add(lblTime)
-        timeSizer.Add(self.txtStartHour,
-                      wx.SizerFlags(1).Border(wx.LEFT, 5))
-        timeSizer.Add(self.txtEndHour,
-                      wx.SizerFlags(1).Border(wx.LEFT, 5))
+        timeSizer.Add(self.txtStartTime,
+                      wx.SizerFlags(0).Border(wx.LEFT, 5))
+        timeSizer.Add(lblTimeTo, wx.SizerFlags(0).Align(wx.ALIGN_CENTER_VERTICAL).Border(wx.LEFT | wx.RIGHT, 5))
+        timeSizer.Add(self.txtEndTime)
 
         destSizer = wx.BoxSizer(wx.HORIZONTAL)
         destSizer.Add(lblDest)
@@ -172,13 +180,15 @@ class SettingsPresenter:
             self._view.txtInterval.SetValue(
                 str(self._scheduleModel.copyInterval))
 
-        if self._scheduleModel.startHour:
-            self._view.txtStartHour.SetValue(
-                str(self._scheduleModel.startHour))
+        if self._scheduleModel.startTime:
+            self._view.txtStartTime.SetTime(*self._scheduleModel.startTimeTuple)
+        else:
+            self._view.txtStartTime.SetTime(0, 0, 0)
 
-        if self._scheduleModel.endHour:
-            self._view.txtEndHour.SetValue(
-                str(self._scheduleModel.endHour))
+        if self._scheduleModel.endTime:
+            self._view.txtEndTime.SetTime(*self._scheduleModel.endTimeTuple)
+        else:
+            self._view.txtEndTime.SetTime(0, 0, 0)
 
         if self._copyModel.destination:
             self._view.txtDest.SetValue(self._copyModel.destination.as_posix())
@@ -232,8 +242,8 @@ class SettingsPresenter:
         try:
             self._scheduleModel.setCopyInterval(
                 self._view.txtInterval.GetValue())
-            self._scheduleModel.setStartHour(self._view.txtStartHour.GetValue())
-            self._scheduleModel.setEndHour(self._view.txtEndHour.GetValue())
+            self._scheduleModel.setStartTime(*self._view.txtStartTime.GetTime())
+            self._scheduleModel.setEndTime(*self._view.txtEndTime.GetTime())
             self._copyModel.setDestination(self._view.txtDest.GetValue())
             sources = [self._view.listSources.GetItem(i, 0).GetText(
             ) for i in range(self._view.listSources.ItemCount)]
