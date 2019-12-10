@@ -18,10 +18,11 @@ def create(frame, taskbarHandler):
 
 
 class TaskbarHandler:
-    def __init__(self, onSettings, onExit, onForceCopy):
+    def __init__(self, onSettings, onExit, onForceCopy, onOpenLog):
         self.onSettings = onSettings
         self.onExit = onExit
         self.onForceCopy = onForceCopy
+        self.onOpenLog = onOpenLog
 
 
 class TaskBarIconView(wx.adv.TaskBarIcon):
@@ -58,11 +59,13 @@ class TaskBarPresenter:
         popupMenu = wx.Menu()
         menuItemSettings = popupMenu.Append(-1, 'Configurações')
         menuItemForceCopy = popupMenu.Append(-1, 'Copiar agora')
+        menuOpenLog = popupMenu.Append(-1, 'Abrir log')
         popupMenu.AppendSeparator()
         menuItemExit = popupMenu.Append(wx.ID_EXIT, 'Sair')
 
         popupMenu.Bind(wx.EVT_MENU, self.OnShowSettings, menuItemSettings)
         popupMenu.Bind(wx.EVT_MENU, self.OnForceCopy, menuItemForceCopy)
+        popupMenu.Bind(wx.EVT_MENU, self.OnOpenLog, menuOpenLog)
         popupMenu.Bind(wx.EVT_MENU, self.OnExit, menuItemExit)
 
         return popupMenu
@@ -80,23 +83,17 @@ class TaskBarPresenter:
     def showBaloon(self, title, text, flags):
         self._view.ShowBalloon(title, text, 3000, flags)
 
-    def _showSettings(self):
-        self._taskbarHandler.onSettings()
-
-    def _forceCopy(self):
-        self._taskbarHandler.onForceCopy()
-
-    def exit(self):
-        self._taskbarHandler.onExit()
-
     def destroy(self):
         self._view.Destroy()
 
     def OnShowSettings(self, evt):
-        self._showSettings()
+        self._taskbarHandler.onSettings()
 
     def OnForceCopy(self, evt):
-        self._forceCopy()
+        self._taskbarHandler.onForceCopy()
 
     def OnExit(self, evt):
-        self.exit()
+        self._taskbarHandler.onExit()
+
+    def OnOpenLog(self, evt):
+        self._taskbarHandler.onOpenLog()

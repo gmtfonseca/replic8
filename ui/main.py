@@ -1,4 +1,7 @@
+import os
+
 import wx
+from pathlib import Path
 
 from replic8.core.schedule import EVT_SCHEDULER, SchedulerState
 from ui import taskbar, settings
@@ -28,7 +31,7 @@ class MainPresenter:
         self._initialize()
 
     def _createTaskBarIcon(self):
-        taskbarHandler = taskbar.TaskbarHandler(self.showSettings, self.quit, self.forceCopy)
+        taskbarHandler = taskbar.TaskbarHandler(self.showSettings, self.quit, self.forceCopy, self.openLog)
         self._taskBarIcon = taskbar.create(self._view, taskbarHandler)
 
     def _initialize(self):
@@ -67,6 +70,11 @@ class MainPresenter:
 
     def forceCopy(self):
         self._app.schedulerManager.forceCopy()
+
+    def openLog(self):
+        logPath = Path(self._app.logger.handlers[0].baseFilename).as_uri()
+        if logPath:
+            os.system('start {}'.format(logPath))
 
     def quit(self):
         if self._hasActiveWindow():
