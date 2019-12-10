@@ -70,6 +70,14 @@ class ScheduleModel(Model):
         self._schedule.copyInterval = int(copyInterval)
         self.saveToDisk(self._schedule)
 
+    def setStartHour(self, startHour):
+        self._schedule.startHour = int(startHour)
+        self.saveToDisk(self._schedule)
+
+    def setEndHour(self, endHour):
+        self._schedule.endHour = int(endHour)
+        self.saveToDisk(self._schedule)
+
     def clear(self):
         self._schedule = Schedule.empty()
         self.saveToDisk(self._schedule)
@@ -77,6 +85,14 @@ class ScheduleModel(Model):
     @property
     def copyInterval(self):
         return self._schedule.copyInterval
+
+    @property
+    def startHour(self):
+        return self._schedule.startHour
+
+    @property
+    def endHour(self):
+        return self._schedule.endHour
 
     @property
     def lastCopy(self):

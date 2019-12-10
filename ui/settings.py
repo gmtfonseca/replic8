@@ -18,7 +18,7 @@ def create(parent, scheduleModel, copyModel, schedulerManager, logger):
 class SettingsFrame(wx.Frame):
 
     def __init__(self, parent, title):
-        height = 385 if sys.platform == 'win32' else 325
+        height = 420 if sys.platform == 'win32' else 370
         super().__init__(parent=parent, title=title,
                          style=wx.SYSTEM_MENU | wx.CAPTION | wx.CLOSE_BOX | wx.FRAME_NO_TASKBAR,
                          size=(500, height))
@@ -37,6 +37,11 @@ class SettingsFrame(wx.Frame):
             panel, -1, 'Pasta de destino', size=(widthLabel, -1))
         self.txtDest = wx.TextCtrl(panel, -1, '')
         self.txtDest.Disable()
+
+        lblTime = wx.StaticText(
+            panel, -1, 'Horário', size=(widthLabel, -1))
+        self.txtStartHour = wx.TextCtrl(panel, -1, '', size=(50, -1))
+        self.txtEndHour = wx.TextCtrl(panel, -1, '', size=(50, -1))
 
         bmpFolder = wx.Bitmap(assets.image('folder.png'), wx.BITMAP_TYPE_PNG)
         self.btnSelectDest = wx.BitmapButton(panel, -1, bmpFolder, (50, 50))
@@ -66,6 +71,13 @@ class SettingsFrame(wx.Frame):
         intervalSizer.Add(self.txtInterval,
                           wx.SizerFlags(1).Border(wx.LEFT, 5))
 
+        timeSizer = wx.BoxSizer(wx.HORIZONTAL)
+        timeSizer.Add(lblTime)
+        timeSizer.Add(self.txtStartHour,
+                      wx.SizerFlags(1).Border(wx.LEFT, 5))
+        timeSizer.Add(self.txtEndHour,
+                      wx.SizerFlags(1).Border(wx.LEFT, 5))
+
         destSizer = wx.BoxSizer(wx.HORIZONTAL)
         destSizer.Add(lblDest)
         destSizer.Add(self.txtDest, wx.SizerFlags(1).Border(wx.LEFT, 5))
@@ -94,6 +106,7 @@ class SettingsFrame(wx.Frame):
 
         mainSizer = wx.BoxSizer(wx.VERTICAL)
         mainSizer.Add(intervalSizer)
+        mainSizer.Add(timeSizer, wx.SizerFlags(0).Border(wx.TOP, 10))
         mainSizer.Add(destSizer, wx.SizerFlags(0).Expand().Border(wx.TOP, 10))
         mainSizer.Add(sourceBox, wx.SizerFlags(0).Expand().Border(wx.TOP, 10))
         mainSizer.Add(footerSizer, wx.SizerFlags(0).Right().Border(wx.TOP, 10))
@@ -159,6 +172,14 @@ class SettingsPresenter:
             self._view.txtInterval.SetValue(
                 str(self._scheduleModel.copyInterval))
 
+        if self._scheduleModel.startHour:
+            self._view.txtStartHour.SetValue(
+                str(self._scheduleModel.startHour))
+
+        if self._scheduleModel.endHour:
+            self._view.txtEndHour.SetValue(
+                str(self._scheduleModel.endHour))
+
         if self._copyModel.destination:
             self._view.txtDest.SetValue(self._copyModel.destination.as_posix())
 
@@ -211,6 +232,8 @@ class SettingsPresenter:
         try:
             self._scheduleModel.setCopyInterval(
                 self._view.txtInterval.GetValue())
+            self._scheduleModel.setStartHour(self._view.txtStartHour.GetValue())
+            self._scheduleModel.setEndHour(self._view.txtEndHour.GetValue())
             self._copyModel.setDestination(self._view.txtDest.GetValue())
             sources = [self._view.listSources.GetItem(i, 0).GetText(
             ) for i in range(self._view.listSources.ItemCount)]

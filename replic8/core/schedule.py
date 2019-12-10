@@ -2,7 +2,7 @@ import time
 from pathlib import Path
 from threading import Thread
 from enum import Enum
-from datetime import date
+from datetime import date, datetime
 
 import wx
 
@@ -30,13 +30,15 @@ class SchedulerState(Enum):
 
 
 class Schedule(object):
-    def __init__(self, copyInterval, lastCopy):
+    def __init__(self, copyInterval, startHour, endHour, lastCopy):
         self.copyInterval = copyInterval
+        self.startHour = startHour
+        self.endHour = endHour
         self.lastCopy = lastCopy
 
     @classmethod
     def empty(cls):
-        return cls(None, None)
+        return cls(None, None, None, None)
 
 
 class SchedulerManager:
@@ -113,15 +115,31 @@ class Scheduler(Thread):
             self.abort()
 
     def _timeToCopy(self):
-        if not self._scheduleModel.lastCopy:
-            return True
-
         if not self._scheduleModel.copyInterval:
             return False
 
+        currHour = datetime.now().hour
         today = date.today()
-        interval = today - self._scheduleModel.lastCopy
-        return interval.days >= self._scheduleModel.copyInterval
+
+        properInterval = False
+        if self._scheduleModel.lastCopy:
+            properInterval = today - self._scheduleModel.lastCopy
+        else:
+            properInterval = True
+
+        return properInterval and self._hourInRange(currHour,
+                                                    self._scheduleModel.startHour,
+                                                    self._scheduleModel.endHour)
+
+    def _hourInRange(self, currHour, startHour, endHour):
+        if not startHour and not endHour:
+            return True
+
+        if startHour <= endHour:
+
+            return startHour <= currHour <= endHour
+        else:
+            return startHour <= currHour or currHour <= endHour
 
     def _setStateAndPostEvent(self, state, title='', text=''):
         self._state = state
