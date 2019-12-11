@@ -119,11 +119,11 @@ class Scheduler(Thread):
             return False
 
         currTime = datetime.datetime.now().time()
-        today = datetime.date.today()
 
         properInterval = False
         if self._scheduleModel.lastCopy:
-            properInterval = today - self._scheduleModel.lastCopy
+            interval = datetime.date.today() - self._scheduleModel.lastCopy
+            properInterval = interval.days >= self._scheduleModel.copyInterval
         else:
             properInterval = True
 
